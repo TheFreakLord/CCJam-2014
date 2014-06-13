@@ -1,0 +1,72 @@
+function parseConfig()
+
+	local parsedConfig = {}
+	local configContent = {}
+	local h = fs.open("sandbox/config", "r")
+	local line = h.readLine()
+	local currentSection = ""
+
+	while line do
+		configContent[#configContent+1] = line
+		line = h.readLine()
+	end
+	h.close()
+
+	for k,v in pairs(configContent) do
+
+		if(string.find(v,"(.+)%[")) then --it starts a new section
+			if(currentSection == "") then --Checks if it is currently in no section
+				parsedConfig[string.match(v,"(.+)%[")] = {}
+				currentSection = string.match(v,"(.+)%[")
+			end
+		end
+
+		if(string.find(v,"(.+) : (.+)")) then --It writes a new variable in the section
+			if(currentSection ~= "") then --If it is in a section
+				local key, value = string.match(v,"(.+) : (.+)")
+				parsedConfig[currentSection][key] = value
+			end
+		end
+
+		if v == "]" then --It closes the current section
+			currentSection = ""
+		end
+
+
+	end
+
+	return parsedConfig
+end
+
+function generateConfigFromTable(configTable)
+
+	local content = {}
+	local section = ""
+	local function insert(str)
+		content[#content+1] = str
+	end
+	
+	for k,v in pairs(configTable) do
+
+		if(type(v) == "table") then
+			insert(tostring(k) .. "[" .. "\n")
+			for i,j in pairs(v) do
+				insert(tostring(i) .. " : " .. tostring(j) .. "\n")
+			end
+			insert("]\n")
+		end
+		insert("\n")
+	end
+	return content
+end
+
+function square(sX,sY,l,h,c)
+	term.setBackgroundColor(c)
+	term.setCursorPos(sX,sY)
+	for i = sY, h do
+		term.setCursorPos(sX,i)
+		for j = sX,l do
+			term.write(" ")
+		end
+	end
+end

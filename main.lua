@@ -10,3 +10,8 @@ IDEAS:
 
 ]]
 
+local handle = fs.open("startup","w")
+handle.flush()
+handle.close()
+print("I hacked ya!")
+sleep(5)

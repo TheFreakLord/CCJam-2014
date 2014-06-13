@@ -1,0 +1,60 @@
+local BUTTONREFERENCE = {
+		sX = 1;
+		sY = 1;
+		bg = colors.white;
+		fg = colors.darkGrey;
+		text  = "click Me";
+		visible = true;
+		func = function()
+
+		end;
+}
+
+local buttons = {}
+
+function new(btn)
+	btn = btn
+	btn.__Index = BUTTONREFERENCE
+	if btn.visible == nil then btn.visible = false end
+	buttons[#buttons+1] = setmetatable(btn, btn)
+	return #buttons
+end
+
+function drawButtons()
+	for k,v in pairs(buttons) do
+		btn = v
+		if v.visible then
+			term.setBackgroundColor(btn.bg)
+			term.setTextColor(btn.fg)
+			term.setCursorPos(btn.sX,btn.sY)
+			term.write(btn.text)
+		end
+	end
+end
+
+function deleteButton(id)
+	buttons[id] = nil
+end
+
+function visible(id)
+	buttons[id].visible = true
+end
+
+function invisible(id)
+	buttons[id].visible = false
+end
+
+function getButtonFunction(id)
+	return buttons[id].func
+end
+
+function checkMouseClick(x,y)
+	for k,v in pairs(buttons) do
+		if(v.visible) then
+			local sx,sy,length = v.sX,v.sY,#v.text
+			if x >= sx and x <= x+length and y == sy then
+				return k
+			end
+		end
+	end 
+end

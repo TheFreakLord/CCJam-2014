@@ -9,6 +9,9 @@ This program allows you to create sandbox folders where you can run programs in.
 
 ]]
 
+os.unloadAPI("sandboxAPI")
+os.loadAPI("sandboxAPI")
+
 local currentSandboxes = {}
 local _fs = {}
 for k,v in pairs(_G["fs"]) do
@@ -230,12 +233,18 @@ local function runProgramInSandbox(path,sandbox)
 
 end
 
+local function addOverride(func,path)
+
+end
+
 local function showHelp()
 
 	print("usage: sandbox.lua <arguments>")
 	print("       new <sandbox name> <path>")
 	print("       remove <sandbox name>")
 	print("       run <path to program> <sandbox name>")
+	print("       addOverride <function name> <path>")
+	print("       noHelp")
 
 end
 
@@ -255,6 +264,10 @@ local function main()
 		if not _fs.exists(args[2]) then return end
 		if not config[args[3]] then return end
 		runProgramInSandbox(args[2], args[3])
+	elseif args[1] == "addOverride" and #args >= 3 then
+		addOverride(args[2],args[3])
+	elseif args[1] == "noHelp" then
+
 	else
 		showHelp()
 	end
