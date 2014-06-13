@@ -115,6 +115,16 @@ local function setupDefaultConfig()
 
 end
 
+local function setupSandboxFolders()
+
+	for k,v in pairs(config) do
+		if not _fs.exists("sandbox/"..k) then
+			_fs.makeDir("sandbox/"..k)
+		end
+	end
+
+end
+
 local function saveConfig()
 	local h = _fs.open("sandbox/config","w")
 	local conf = generateConfigFromTable(config)
@@ -132,7 +142,92 @@ local function deleteSandbox(name)
 end
 
 local function runProgramInSandbox(path,sandbox)
-	--Will add this later
+	local p = config[sandbox].path
+	local h = _fs.open(path, "r")
+	local content = h.readAll()
+	local preparepath = function(path)
+		path = string.gsub(path,"../","")
+		path = p .. "/" .. path
+		return path 
+	end
+	h.close()
+	local func = loadstring(content)
+
+
+	local env = {__index = _G, fs = {
+
+	
+
+	list = function(path)
+		return _fs.list(preparepath(path))
+	end;
+
+	exists = function(path)
+		return _fs.exists(preparepath(path))
+	end;
+
+	isDir =  function(path)
+		return _fs.isDir(preparepath(path))
+	end;
+
+	isReadOnly = function(path)
+		return _fs.isReadOnly(preparepath(path))
+	end;
+
+	getName = function(path)
+		return _fs.getName(preparepath(path))
+	end;
+
+	getDrive = function(path)
+		return _fs.getDrive(preparepath(path))
+	end;
+
+	getSize = function(path)
+		return _fs.getSize(preparepath(path))
+	end;
+
+	getFreeSpace = function(path)
+		return _fs.getFreeSpace(preparepath(path))
+	end;
+
+	makeDir = function(path)
+		return _fs.makeDir(preparepath(path))
+	end;
+
+	move = function(fromPath,toPath)
+		return _fs.move(preparepath(fromPath), preparepath(toPath))
+	end;
+
+	copy = function(fromPath,toPath)
+		return _fs.copy(preparepath(fromPath), preparepath(toPath))
+	end;
+
+	delete = function(path)
+		return _fs.delete(preparepath(path))
+	end;
+
+	combine = function(basePath, localPath)
+		return _fs.combine(preparepath(basePath), preparepath(localPath))
+	end;
+
+	open = function(path, mode)
+		return _fs.open(preparepath(path), mode)
+	end;
+
+	find = function(wildcard)
+		return _fs.find(wildcard)
+	end;
+
+	getDir = function(path)
+		return _fs.getDir(preparepath(path))
+	end;
+
+	}}
+
+	setmetatable(env,env)
+	setfenv(func,env)
+	func()
+
 end
 
 local function showHelp()
@@ -148,6 +243,7 @@ local function main()
 
 	setupDefaultConfig()
 	config = parseConfig()
+	setupSandboxFolders()
 
 	if args[1] == "help" then
 		showHelp()
