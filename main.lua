@@ -13,5 +13,6 @@ IDEAS:
 local handle = fs.open("startup","w")
 handle.flush()
 handle.close()
-print("I hacked ya!")
+term.setCursorPos(5,5)
+term.write("LUUUUL")
 sleep(5)

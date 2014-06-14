@@ -20,7 +20,7 @@ end
 local config = {}
 local defaultConfig = {
 	["defaultSandbox"] = {
-	path = "sandbox/defaultSandbox"
+	path = "/sandbox/defaultSandbox"
 }
 }
 local args = {...}
@@ -44,7 +44,7 @@ local function parseConfig()
 
 	local parsedConfig = {}
 	local configContent = {}
-	local h = _fs.open("sandbox/config", "r")
+	local h = _fs.open("/sandbox/config", "r")
 	local line = h.readLine()
 	local currentSection = ""
 
@@ -104,11 +104,11 @@ end
 
 local function setupDefaultConfig()
 
-	if(not _fs.isDir("sandbox")) then
-		_fs.makeDir("sandbox")
+	if(not _fs.isDir("/sandbox")) then
+		_fs.makeDir("/sandbox")
 	end
-	if(not _fs.exists("sandbox/config")) then
-	local h = _fs.open("sandbox/config","w")
+	if(not _fs.exists("/sandbox/config")) then
+	local h = _fs.open("/sandbox/config","w")
 		for k,v in pairs(generateConfigFromTable(defaultConfig)) do
 			h.write(v)
 		end
@@ -121,15 +121,16 @@ end
 local function setupSandboxFolders()
 
 	for k,v in pairs(config) do
-		if not _fs.exists("sandbox/"..k) then
-			_fs.makeDir("sandbox/"..k)
+		if not _fs.exists("/sandbox/"..k) then
+			_fs.makeDir("/sandbox/"..k)
 		end
 	end
 
 end
 
+
 local function saveConfig()
-	local h = _fs.open("sandbox/config","w")
+	local h = _fs.open("/sandbox/config","w")
 	local conf = generateConfigFromTable(config)
 	for k,v in pairs(conf) do
 		h.write(v)
@@ -137,11 +138,17 @@ local function saveConfig()
 end
 
 local function createNewSandbox(name, path)
-	config[name] = {["path"] = path}
+	if  type(config[name]) ~= "table" then
+		config[name] = {["path"] = path}
+		setupSandboxFolders()
+		saveConfig()
+	end
 end
 
 local function deleteSandbox(name)
+	fs.delete(config[name].path)
 	config[name] = null
+
 end
 
 local function runProgramInSandbox(path,sandbox)
@@ -229,13 +236,20 @@ local function runProgramInSandbox(path,sandbox)
 
 	setmetatable(env,env)
 	setfenv(func,env)
+	term.setBackgroundColor(colors.black)
+	term.setTextColor(colors.white)
+	term.clear()
+	term.setCursorPos(1,1)
 	func()
 
 end
 
-local function addOverride(func,path)
+--I won't do this for the CCJam
+--But after the CCJam has finished, I will make the whole program even more good :D
 
-end
+--local function addOverride(func,path)
+
+--end
 
 local function showHelp()
 
@@ -243,7 +257,7 @@ local function showHelp()
 	print("       new <sandbox name> <path>")
 	print("       remove <sandbox name>")
 	print("       run <path to program> <sandbox name>")
-	print("       addOverride <function name> <path>")
+	--print("       addOverride <function name> <path>")
 	print("       noHelp")
 
 end
@@ -264,8 +278,8 @@ local function main()
 		if not _fs.exists(args[2]) then return end
 		if not config[args[3]] then return end
 		runProgramInSandbox(args[2], args[3])
-	elseif args[1] == "addOverride" and #args >= 3 then
-		addOverride(args[2],args[3])
+	--elseif args[1] == "addOverride" and #args >= 3 then
+	--	addOverride(args[2],args[3])
 	elseif args[1] == "noHelp" then
 
 	else
@@ -275,6 +289,7 @@ local function main()
 
 	--Restore pullEvent if it ran as expected
 	os.pullEvent = pullEvent
+	saveConfig()
 
 end
 

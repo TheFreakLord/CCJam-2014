@@ -51,8 +51,9 @@ end
 function checkMouseClick(x,y)
 	for k,v in pairs(buttons) do
 		if(v.visible) then
-			local sx,sy,length = v.sX,v.sY,#v.text
-			if x >= sx and x <= x+length and y == sy then
+			local sx,sy = v.sX,v.sY
+			local length = #v.text
+			if x >= sx and x <= sx+length and y == sy then
 				return k
 			end
 		end
